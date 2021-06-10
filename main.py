@@ -1,7 +1,7 @@
 import argparse
-import logging
 
-from utils import open_voice, save_voices
+from recognize import voice_recognize
+from utils import open_audio, save_audios
 
 noise_handler = {
 	 
@@ -12,30 +12,29 @@ filter_handler = {
 }
 
 if __name__ == '__main__':
-	parser = argparse.ArgumentParser(description="process voice samples")
+	parser = argparse.ArgumentParser(description="process piano audio samples")
 
-	parser.add_argument('sample', help="path of voice sample")
+	parser.add_argument('sample', help="path of audio sample")
 	parser.add_argument('--noise', choices=[])
-	parser.add_argument('--verbose', action='store_true', default=False)
+	parser.add_argument('--verbose', action="store_true", default=False)
+
+	parser.add_argument('--partial', help="experience parameters in freqency recognition")
 
 	# add other arguments 
 
 	args = parser.parse_args()
+	
+	name, y, sr = open_audio(args.sample)
 
-	logger = logging.basicConfig(level=logging.info)
-	if args.verbose:
-		pass
-		
-	name, voice = open_voice(args.sample)
+	noised_y = noise_handler[args.noise](y, args.verbose)
+	filtered_y = filter_handler[args.noise](y, args.verbose)
 
-	noised_voice = noise_handler[args.noise](voice)
-	filtered_voice = filter_handler[args.noise](voice)
-
-	kwargs = voice_recognize()
+	kwargs = voice_recognize(y, sr, args.verbose)
 
 	# TODO: output format unimplemented
-	print("".format(**kwargs))
+	for _, output in kwargs.items():
+		print(output)
 
-	save_voices(name, noised_voice, filtered_voice)
+	save_audios(name, noised_y, filtered_y)
 
 

@@ -1,4 +1,6 @@
 import os
+import librosa
+import soundfile as sf
 
 def get_src_path(path):
     prefix = os.environ.get('VP_SRC_PATH')
@@ -6,13 +8,24 @@ def get_src_path(path):
         prefix = os.path.expanduser('~/.vp')
     return os.path.abspath(os.path.join(prefix, path)) 
 
-def open_voice(voice_path):
-    pass
 
-def save_voice(voice, voice_path):
-    pass
+def open_audio(audio_path):
+    audio, sr = librosa.load(audio_path, sr=None)
+    tokens = os.path.basename(audio_path).split('.')
+    
+    return ''.join(tokens[:max(1, len(tokens) - 1)]),\
+           audio, sr
 
-def save_voices(name, noised_voice, filterd_voice):
-    # FIXME: expanded name not added 
-    save_voice(get_src_path(noised_voice, (name + '_noised.')))
-    save_voice(get_src_path(filterd_voice, (name + '_filtered.')))
+
+def _save_audio(audio, audio_path):
+    sf.write(audio_path, audio, sr, subtype='PCM_24')
+    
+
+def save_audios(name, noised_audio, filterd_audio):
+    _save_audio(get_src_path(noised_audio, 'noised_{}.wav'.format(name)))
+    _save_audio(get_src_path(filterd_audio, 'filtered_{}.wav'.format(name)))
+
+
+if __name__ == '__main__':
+    name, y, sr = open_audio('demo.wav')
+    
