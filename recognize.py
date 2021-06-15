@@ -99,4 +99,4 @@ if __name__ == '__main__':
     y, sr = librosa.load('slices/01.wav')
 
     freq_hz = freq_recognize(y, sr, verbose=True)
-    print(librosa.hz_to_note(freq_hz))
+    print("freq: {:.2f}Hz\tnote: {}".format(freq_hz, librosa.hz_to_note(freq_hz)))
