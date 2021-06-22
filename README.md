@@ -1,7 +1,7 @@
 # Liblily
 
-[![en](https://img.shields.io/badge/lang-en-red.svg)](https://github.com/ethan-iai/libiai/master/README.md)
-[![cn](https://img.shields.io/badge/语言-cn-yellow.svg)](https://github.com/ethan-iai/libiai/master/README.cn.md)
+[![en](https://img.shields.io/badge/lang-en-red.svg)](https://github.com/ethan-iai/liblily/tree/master/README.md)
+[![cn](https://img.shields.io/badge/语言-cn-yellow.svg)](https://github.com/ethan-iai/liblily/tree/master/README.cn.md)
 
 ## Features
 - add noises and filter 
