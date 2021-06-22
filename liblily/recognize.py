@@ -13,19 +13,35 @@ def audio_recognize(y, sr, verbose=False):
         librosa.display.waveplot(y, sr=sr)
         plt.savefig('./wave_figure.jpg')
     
-    tempo, beat_frames = librosa.beat.beat_track(y=y, sr=sr)
+    tempo, beat_samples = librosa.beat.beat_track(y=y, sr=sr, units='samples')
     ret_kwargs['tempo'] = tempo
 
-    print('Estimated tempo: {:.2f} beats per minute'.format(tempo))
-    print(beat_frames)
+    print('Estimated tempo: {:.2f} bpm'.format(tempo))
     # print(beat_frames * 512)
 
     # Convert the frame indices of beat events into timestamps
-    
+    beat_cnt = len(beat_samples)
+    beat_times = librosa.samples_to_time(beat_samples, sr=sr)
+    beat_times = beat_times
+    start = beat_samples[0]
+    for i, end in enumerate(beat_samples[1 : beat_cnt - 1]):
+        freq_hz = freq_recognize(y[start : end], sr, verbose)
+        print("period: [{:.2f}, {:.2f}]\tfreq: {:.2f}Hz\tnote: {}".format(beat_times[i], beat_times[i + 1], 
+                                                                          freq_hz, librosa.hz_to_note(freq_hz))) 
+        start = end
+
     return ret_kwargs
 
 def freq_recognize(y, sr, N=4, partial=0.85, delta=0.005, hop_length=512, slice=(0, 0.8), verbose=False):
     y = y[slice[0]: int(slice[1] * len(y))]
+
+    # verbose = True
+    if verbose:
+        times = librosa.times_like(y, sr, hop_length)
+        librosa.display.waveplot(y, sr=sr)    
+        plt.savefig('step0.jpg')
+        plt.close()
+    # verbose = False
 
     peaks = librosa.util.peak_pick(y, hop_length * 0.4, hop_length * 0.4, 
                                    hop_length * 0.4, hop_length * 0.4, 
@@ -89,14 +105,34 @@ def freq_recognize(y, sr, N=4, partial=0.85, delta=0.005, hop_length=512, slice=
         plt.savefig('step3.jpg')
         plt.close()
 
-    fouriers = np.fft.fft(filterd_y)
-    freqs = np.fft.fftfreq(len(filterd_y), d=(1/sr))
+    n = len(filterd_y)
+    fouriers = np.abs(np.fft.fft(filterd_y))[ : n // 2]
+    freqs = np.fft.fftfreq(n, d=(1/sr))[ : n // 2]
+    
+    if verbose:
+        plt.subplot(1, 2, 1)
+        prefs = np.abs(np.fft.fft(y))[ : n // 2]
+        plt.xlim(0, 1024)
+        plt.vlines(freqs[np.argmax(prefs)], ymin=0, ymax=prefs.max() * 1.2 , colors='r')
+        plt.plot(freqs, prefs)
+        plt.title("Unfiltered")
+        plt.xlabel('Frequency [Hz]')
 
+        plt.subplot(1, 2, 2)
+        plt.xlim(0, 256)
+        plt.plot(freqs, fouriers)
+        plt.vlines(freqs[np.argmax(fouriers)], ymin=0, ymax=fouriers.max() * 1.2, colors='r')
+        plt.title("Filtered")
+        plt.xlabel('Frequency [Hz]')
+
+        plt.savefig('step4.jpg')
+        plt.close()
+    
     return freqs[np.argmax(fouriers)]
 
     
 if __name__ == '__main__':
-    y, sr = librosa.load('slices/01.wav')
+    y, sr = librosa.load('demo.wav')
 
-    freq_hz = freq_recognize(y, sr, verbose=True)
-    print("freq: {:.2f}Hz\tnote: {}".format(freq_hz, librosa.hz_to_note(freq_hz)))
+    freq_hz = audio_recognize(y, sr, verbose=False)
+    # print("freq: {:.2f}Hz\tnote: {}".format(freq_hz, librosa.hz_to_note(freq_hz)))

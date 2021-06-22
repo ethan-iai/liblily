@@ -3,14 +3,14 @@ import librosa
 import soundfile as sf
 
 def get_src_path(path):
-    prefix = os.environ.get('VP_SRC_PATH')
+    prefix = os.environ.get('LIBLILY_SRC_PATH')
     if not prefix:
         prefix = os.path.expanduser('~/.vp')
     return os.path.abspath(os.path.join(prefix, path)) 
 
 
 def open_audio(audio_path):
-    audio, sr = librosa.load(audio_path, sr=None)
+    audio, sr = librosa.load(audio_path)
     tokens = os.path.basename(audio_path).split('.')
     
     return ''.join(tokens[:max(1, len(tokens) - 1)]),\
