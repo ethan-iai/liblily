@@ -1,7 +1,7 @@
 import argparse
 
-from recognize import audio_recognize
-from utils import open_audio, save_audios
+from liblily.recognize import audio_recognize
+from liblily.utils import open_audio, save_audios
 
 noise_handler = {
 	 
