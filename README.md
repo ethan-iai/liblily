@@ -13,6 +13,7 @@
 ```shell
 git clone https://github.com/ethan-iai/liblily.git
 cd liblily
+pip install -r requirements.txt
 pip install -e .
 ```
 

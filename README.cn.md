@@ -7,17 +7,20 @@ TODO:
 ## 加噪与去噪
 
 TODO:
+
 ## 节拍识别
 
 TODO:
+
 ## 音高识别
 
-
+TODO:
 
 ## 下载与安装
 ```shell
 git clone https://github.com/ethan-iai/liblily.git
 cd liblily
+pip install -r requirements.txt
 pip install -e .
 ```
 
