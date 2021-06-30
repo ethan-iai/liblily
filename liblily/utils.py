@@ -5,7 +5,7 @@ import soundfile as sf
 def get_src_path(path):
     prefix = os.environ.get('LIBLILY_SRC_PATH')
     if not prefix:
-        prefix = os.path.expanduser('~/.vp')
+        prefix = os.path.expanduser('~/.liblily')
     return os.path.abspath(os.path.join(prefix, path)) 
 
 
