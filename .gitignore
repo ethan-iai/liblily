@@ -139,5 +139,6 @@ slices/
 # audio
 *.wav
 
-# pictures
-*.jpg
+
+# tmp 
+tmp/
