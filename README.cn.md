@@ -2,7 +2,23 @@
 
 ## 简介
 
-TODO:
+`liblily`是一个用于音频处理python库，可以实现音乐的加噪去噪，音乐的节拍识别与分割，音高识别的功能。
+同时，为了方便日常使用，本库提供了用于交互的命令行工具。
+
+```python
+# 加噪
+
+# TODO:
+
+# 去噪
+# TODO:
+
+# 节拍识别
+#TODO:
+
+# 音高识别
+liblily.recoginze.freq_recognize(y, sr, ...)
+```
 
 ## 加噪与去噪
 
