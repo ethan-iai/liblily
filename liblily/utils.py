@@ -10,7 +10,7 @@ def get_src_path(path):
 
 
 def open_audio(audio_path):
-    audio, sr = librosa.load(audio_path)
+    audio, sr = librosa.load(audio_path, mono=True)
     tokens = os.path.basename(audio_path).split('.')
     
     return ''.join(tokens[:max(1, len(tokens) - 1)]),\

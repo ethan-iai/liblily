@@ -13,12 +13,17 @@ def audio_recognize(y, sr, verbose=False):
         librosa.display.waveplot(y, sr=sr)
         plt.savefig('./wave_figure.jpg')
     
-    tempo, beat_samples = librosa.beat.beat_track(y=y, sr=sr, units='samples')
+    # call librosa to get note slice 
+    # NOTE: we haven't use it to recognize tempo 
+    tempo_ref, beat_samples = librosa.beat.beat_track(y=y, sr=sr, units='samples')
+    tempo = tempo_recogize(y, sr)
     ret_kwargs['tempo'] = tempo
 
     print('Estimated tempo: {:.2f} bpm'.format(tempo))
-    # print(beat_frames * 512)
-
+    
+    if verbose:
+        print('Estimated tempo by librosa: {:.2f} bpm'.format(tempo_ref))
+    
     # Convert the frame indices of beat events into timestamps
     beat_cnt = len(beat_samples)
     beat_times = librosa.samples_to_time(beat_samples, sr=sr)
@@ -31,6 +36,96 @@ def audio_recognize(y, sr, verbose=False):
         start = end
 
     return ret_kwargs
+
+def tempo_recogize(y, sr):
+    # y = y * 32767
+    
+    # 时间序列
+    times = np.arange(y.size) / sr
+
+    # 对原始信号进行FFT
+    freqs = np.fft.fftfreq(y.size, times[1]-[0])
+    complex_array = np.fft.fft(y)
+    pows = np.abs(complex_array)
+
+    # 以1024个采样点为一个window
+    lastPieceArray = np.fft.fft(y[:1024])
+    lastTimeArray = times[:1024]
+    lastSpectrum = np.abs(lastPieceArray)
+    fluxArray =[]
+
+    # 逐个窗口进行差分，提取频谱通量
+    for i in range(1024, y.size-1024, 1024):
+        windowArray = np.fft.fft(y[i:i+1024])
+        spectrum = np.abs(windowArray)
+        flux = 0.0
+        for j in range(1024):
+            a = spectrum[j]
+            b = lastSpectrum[j]
+            value = a - b
+            if value < 0.0:
+                value = 0
+            flux += value
+        fluxArray.append(flux)
+        lastSpectrum = spectrum
+
+    # 以每个窗口前后十个窗口进行平均设置阈值
+    threshold_size = 20   # 窗口值的选取？0.5s一拍
+    thresholdArray = []
+    for i in range(0, len(fluxArray)):
+        start = max(0, i - threshold_size)
+        end = min(len(fluxArray)-1, i+threshold_size)
+        mean = 0.0
+        for j in range(start, end):
+            mean += fluxArray[j]
+        mean /= (end-start)
+        thresholdArray.append(mean*2.1)
+
+    # 筛选节拍点
+    peakArray = []
+    for i in range(0, len(thresholdArray)):
+        if(thresholdArray[i] <= fluxArray[i]):
+            peakArray.append(fluxArray[i])
+        else:
+            peakArray.append(float(0))
+
+    count = 0
+    peaks = []
+    peakNumber = []
+    peakValue = []
+    shold = []
+    for i in range(1, len(thresholdArray)-1):
+        if((peakArray[i] > peakArray[i+1]) and (peakArray[i] > peakArray[i-1])):
+            peaks.append(peakArray[i])
+            count += 1
+            peakNumber.append(i)
+            peakValue.append(peakArray[i])
+            shold.append(thresholdArray[i])
+        else:
+            peaks.append(float(0))
+
+    # 去除过近的
+    cnt = 0
+    for i in range(len(peakValue)):
+        if(i == 0):
+            j=0
+        else:
+            j=i-1
+        if((peakNumber[i]-peakNumber[j])<=4):
+            cnt += 1
+
+    # average = np.sum(peakValue) / len(peakValue)
+    # maxPeak = max(peakValue)
+
+    # 输出识别出的count和librosa提取的节拍对比
+    count = float(count)
+
+    long = y.size / sr
+
+    # TODO: magic number: 1.6
+    # * 1.6 is used to solve the differnce between 
+    # scipy.io.wavfile.read() and librosa.load()
+    return (count * 60 * 1.62 / long)
 
 def freq_recognize(y, sr, N=4, partial=0.85, delta=0.005, hop_length=512, slice=(0, 0.8), verbose=False):
     y = y[slice[0]: int(slice[1] * len(y))]
