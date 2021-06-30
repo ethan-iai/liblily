@@ -52,29 +52,47 @@ if __name__ == '__main__':
 		noised_signs = noised_signs + generate_sinusoid_2(max(times) + times[1], 2000, 5000, sample_rate, 0)  # 高频
 		noised_signs = noised_signs / (2 ** 15)
 		origin_signs = origin_signs / (2 ** 15)
-		fft_filter = ideal_lh_pass_filter("low", noised_signs, 3000, sample_rate)
+		
+		fft_filter = ideal_lh_pass_filter("low", noised_signs.copy(), 3000, sample_rate)
 		filter_signs = np.fft.ifft(fft_filter)
-
 		wf.write(get_src_path('ideal_lh_pass_filter_noised_{}.wav'.format(name)), sample_rate, (filter_signs* 2 ** 15).astype(np.int16))
 	
+		filter_signs= Butterworth_filter(4,noised_signs.copy(),[(2 * 250 / sample_rate), (2 * 3000 / sample_rate)], "bandpass")
+		fft_filter = np.fft.fft(filter_signs)
+		wf.write(get_src_path('ideal_lh_pass_filter_noised_{}.wav'.format(name)), sample_rate, (filter_signs* 2 ** 15).astype(np.int16))
+		
+		
 	elif args.noise == 'low_freq':
 		noised_signs = noised_signs + generate_sinusoid_2(max(times)+times[1],2000,200,sample_rate,0) #低频
 		noised_signs = noised_signs / (2 ** 15)
 		origin_signs = origin_signs / (2 ** 15)
-		filter_signs = Butterworth_filter(4, noised_signs, [(2 * 250 / sample_rate), (2 * 3000 / sample_rate)],"bandpass")
+		
+		filter_signs = Butterworth_filter(4, noised_signs.copy(), [(2 * 250 / sample_rate), (2 * 3000 / sample_rate)],"bandpass")
 		fft_filter = np.fft.fft(filter_signs)
-
 		wf.write(get_src_path('Butterworth_filter_noised_{}.wav'.format(name)), sample_rate, (filter_signs* 2 ** 15).astype(np.int16))
 
 	elif args.noise == 'guass':
 		noised_signs, noisy = awgn(origin_signs, snr=0, out='both', method='vectorized', axis=0)
 		noised_signs = noised_signs / (2 ** 15)
 		origin_signs = origin_signs / (2 ** 15)
+		
 		# 均值滤波器
-		filter_signs= sl_filter(noised_signs)
+		filter_signs= sl_filter(noised_signs.copy())
 		fft_filter = np.fft.fft(filter_signs)
-
 		wf.write(get_src_path('sl_filter_noised_{}.wav'.format(name)), sample_rate, (filter_signs* 2 ** 15).astype(np.int16))
+
+		#维纳滤波器
+		filter_signs = ss.wiener(noised_signs.copy())
+		fft_filter = np.fft.fft(filter_signs)
+		wf.write(get_src_path('Wiener_filter_noised_{}.wav'.format(name)), sample_rate, (filter_signs* 2 ** 15).astype(np.int16))
+
+		fft_filter,sample_sign= Spectral_subtraction_filter_Berouti(noised_signs.copy(),3.5,4,sample_rate)
+		filter_signs = np.fft.ifft(fft_filter)
+		wf.write(get_src_path('Berouti_spectral_subtraction_filter_noised_{}.wav'.format(name)), sample_rate, (filter_signs* 2 ** 15).astype(np.int16))
+
+		fft_filter,sample_sign= Spectral_subtraction_filter_easy(noised_signs.copy(),3.5,4,sample_rate)
+		filter_signs = np.fft.ifft(fft_filter)
+		wf.write(get_src_path('simple_spectral_subtraction_filter_noised_{}.wav'.format(name)), sample_rate, (filter_signs* 2 ** 15).astype(np.int16))
 
 	else:
 		raise NotImplementedError()
