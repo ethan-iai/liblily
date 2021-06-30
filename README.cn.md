@@ -36,7 +36,7 @@ TODO:
 ### 简介
 先用**时域处理法**对音乐信号进行**基音频率**估计， 然后以得到的基音频率为参数设计**数字低通滤波器**。音乐信号经滤波器滤波后，滤除了高频分量，相当于减小了音乐信号的频宽， 排除了谐波成分的干扰。在此基础上再做**FFT** 就可得到准确的音高。
 
-
+![process](https://github.com/ethan-iai/liblily/blob/master/images/process.png)
 
 ## 下载与安装
 ```shell
