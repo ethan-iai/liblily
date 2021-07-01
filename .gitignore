@@ -137,7 +137,7 @@ slices/
 *.out
 
 # audio
-*.wav
+# *.wav
 
 
 # tmp 
