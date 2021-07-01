@@ -21,18 +21,18 @@ pip install -e .
 add __Guass__ noise to `demo.wav` , filter addtional noises with certain methods and print out the tempo and notes detected. By default, liblily would save results under the `~/.liblily` directory. You could override it by setting the `LIBLILY_SRC_DIR` environment variable to an alternative location.
 
 ```shell
-python -m liblily.cli demo.wav --method guass 
+python -m liblily.cli examples/demo.wav --noise guass 
 ```
 
 Further more, you can customize the paremeters of algorithm in the command line.
 
 ```shell
-python -m liblily.cli demo.wav --method guass --partial 0.8
+python -m liblily.cli examples/demo.wav --noise guass --partial 0.8
 ```
 ### advanced
 
 while tuning the parameters, add `--verbose` in your command to draw "useful" figures with `matplotlib` that visualize the effects of parameters. 
 
 ```shell
-python -m liblily.cli demo.wav --method guass --partial 0.8 --verbose
+python -m liblily.cli examples/demo.wav --noise guass --partial 0.8 --verbose
 ```
